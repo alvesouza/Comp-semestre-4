@@ -1,0 +1,9 @@
+#box01 {
+    background-color: rgb(57, 9, 230) ;
+}
+#box02 {
+    background-color: rgb(255, 115, 22) ;
+    position: absolute;
+    width:100%;
+    text-align: center;
+}

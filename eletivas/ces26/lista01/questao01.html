@@ -1,0 +1,29 @@
+<!-- Pedro Alves de Souza Neto
+    Turma COMP21 -->
+<html>
+    <head>
+        <link rel="stylesheet" href="estilo.css">
+        <script src="questao01Js.js"></script>
+    </head>
+<body>
+    <body style = "text-align: center;"></body>
+<p>Serie 01</p>
+<p>Aluno: Pedro Alves de Souza Neto</p>
+<p>Turma: Comp21</p>
+<p>Matéria: Ces-26</p>
+
+<p>1)Em cima de um DOM existente, crie novos elementos e depois remova elementos do DOM.</p>
+<button onclick="CreateElement()">Adciona</button>
+<button onclick="DeletaElement()">Remove</button>
+<p id="demo"></p>
+
+<p>2) Navegue sobre os diferentes elementos do DOM e mude um atributo dos elementos visitados.</p>
+<button onclick="alteraElementos()">Alterar</button>
+
+<p>3) Acrescente tratamento de eventos em um elemento. Por exemplo, faça com que um elemento mude de cor, se o mouse passar por ele.</p>
+<input type="color" id="corEscolhida" name="corEscolhida" value="#ffff00" onchange="corMudou()"><br>
+<div id = "box01" onmouseover="mudaCor(this)" onmouseout = "voltaCor(this)">Muda cor</div>
+<p>4) Crie uma animação. Faça um bloco de texto cair para o final da janela quando for clickado.</p>
+<p id = "box02" onclick="caiTexto(this)">Texto vai cair</p>
+</body>
+</html>
