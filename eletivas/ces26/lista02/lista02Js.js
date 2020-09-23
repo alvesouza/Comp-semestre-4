@@ -167,8 +167,8 @@ class AviaoObjeto extends ObjetoImagem{
         
         if(this.estado == MOVING_AVIAO){
             //Segue acompanha mouse
-            this.transform.x = 0;
-            this.transform.y = 0;
+            this.transform.x = mousePos.x||0;
+            this.transform.y = mousePos.y||0;
         }
     }
 }
