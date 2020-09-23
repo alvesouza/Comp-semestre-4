@@ -7,11 +7,18 @@ const AVIAOIMGLINK = "aviao.png";
 const IMGLINK = AVIAOIMGLINK;
 const DEG2RAD = Math.PI/180;
 
+//estados Avião
+const MOVING_AVIAO = 0;
+const EXPLODING_AVIAO = 1;
+
 //estados do missil
 const IDLE_MISSIL = 0;
 const FOLLOW_MISSIL = 1;
 const EXPLODING_MISSIL = 2;
 
+//estados Controller
+// const CONTROLLER_DENTRO_CANVAS = 0;
+// const CONTROLLER_FORA_CANVAS = 1;
 //constantes para o missil
 const MISSILIMGLINK = "aviao.png";
 const VELOCITY_MISSIL = 10;
@@ -43,11 +50,28 @@ function Controller(){
     this.time0 = Date.now();
     this.time1 = Date.now();
     this.deltaTime = this.time1 - this.time0;
-
+    this.objectsArray = [];
     this.update = function(){
         this.time0 = this.time1;
         this.time1 = Date.now();
         this.deltaTime = this.time1 - this.time0;
+    }
+    this.UpdateScene = function(){
+        var n;
+        for(;;){    
+            this.update();
+
+            //passa por todos os objetos
+            n = this.objectsArray.length;
+            for (let index = 0; index < n; index++) {
+                this.objectsArray[index].update();
+                if(this.objectsArray[index].toBeDestroyed){
+                    this.objectsArray[index].destroyItself();
+                    n--;
+                    index--;
+                }
+            }
+        }
     }
 }
 
@@ -72,7 +96,7 @@ class Classe01 extends Classe{
 }
 var classe = new Classe01(2);
 console.log(classe.dobro());
-var controller = Controller();
+var controller = new Controller();
 var tranform = new Transform({position:[1,2],angle:30})
 var tranform1 = new Transform({position:[1,1],angle:30})
 console.log(tranform)
@@ -94,6 +118,7 @@ class ObjetoImagem{
         this.img = new Image()
         this.onload = this.Draw;
         this.img.src = options.imgLink;
+        this.toBeDestroyed = false;
     }
     eraseDraw(){
         //limpa parte do canvas do frame antigo
@@ -123,8 +148,11 @@ class ObjetoImagem{
         return;
     }
     destroyItself(){
-        //apaga o desenho
-        this.eraseDraw();
+        if(this.toBeDestroyed){
+            //apaga o desenho
+            this.eraseDraw();
+            controller.objectsArray.splice(controller.objectsArray.indexOf(this),1);
+        }
     }
 }
 
@@ -133,11 +161,15 @@ class AviaoObjeto extends ObjetoImagem{
         options = options||{};
         options.imgLink = options.imgLink||AVIAOIMGLINK;
         super(options);
+        this.estado = MOVING_AVIAO;
     }
     update(){
-        //Segue acompanha mouse
-        this.transform.x = mousePos.x;
-        this.transform.y = mousePos.y;
+        
+        if(this.estado == MOVING_AVIAO){
+            //Segue acompanha mouse
+            this.transform.x = 0;
+            this.transform.y = 0;
+        }
     }
 }
 
@@ -182,19 +214,12 @@ function main(){
         mousePos = {x:evt.clientX - rect.left, y:evt.clientY - rect.top};
         // console.log("x = ",mousePos.x," y = ", mousePos.y);
     });
-    aviao = new Image()
-    var x = 100;
-    var y = 100;
-    var angle = 30;
-    aviao.onload = function () {
-        var sen = Math.sin(angle*DEG2RAD);
-        var cos = Math.cos(angle*DEG2RAD);
-        contexto.save();
-        contexto.rotate(angle*DEG2RAD);
-        contexto.drawImage(aviao, x*cos + y*sen - aviao.naturalWidth/2, y*cos - x*sen - aviao.naturalHeight/2);
-        contexto.restore();
-    }
-    aviao.src = AVIAOIMGLINK;
+    aviao = new AviaoObjeto();
+    missil = new MissilObjeto(aviao);
+    controller.objectsArray.push(aviao);
+    controller.objectsArray.push(missil);
+
+    controller.UpdateScene();
 }
 window.onload = main
 
