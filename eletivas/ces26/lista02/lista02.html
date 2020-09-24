@@ -1,20 +1,33 @@
+<meta charset="UTF-8">
 <!-- Pedro Alves de Souza Neto
     Turma COMP21 -->
 <html>
     <head>
-        <link rel="stylesheet" href="estilo.css">
+        <!-- <script src="https://unpkg.com/konva@7.1.3/konva.min.js"></script>
+        <script src="https://unpkg.com/gifler@0.1.0/gifler.min.js"></script> -->
         <script src="lista02Js.js"></script>
     </head>
 <body>
     <body style = "text-align: center;"></body>
+<audio id="themeSong">
+    <source src="assets/bensound-happyrock.mp3" type="audio/mpeg" muted>
+</audio>    
+
 <p>Serie 02</p>
 <p>Aluno: Pedro Alves de Souza Neto</p>
 <p>Turma: Comp21</p>
 <p>Matéria: Ces-26</p>
 
 <p>1)Um avião acompanha a posição do mouse na tela.</p>
-
-<canvas id="canvas" width="1920" height="1080"></canvas>
+<p>2) Um míssil fica apontando para a posição do avião.</p>
+<p>3) Ao click do mouse, o míssil é disparado e passa a ir em direção ao
+avião. Ele explode quando o avião é atingido.</p>
+<p>4) Inclua efeitos sonoros e um botão para habilitar e desabilitar os
+    sons.</p>
+<button onclick="playAudio()" type="button">Play Audio</button>
+<button onclick="pauseAudio()" type="button">Pause Audio</button> 
+<canvas id="canvas"></canvas>
 
 </body>
+
 </html>
