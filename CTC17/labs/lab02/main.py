@@ -1,103 +1,105 @@
-# This is a sample Python script.
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+class Queen():
+    def __init__(self, i, j):
+        self.i = i
+        self.j = j
 
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
-
-# class __QueensBoard:
-#     def __init__(self, arg = None):
-#         if not self.h:
-#             self.h = 0
-#         if arg is None:
-#             if not self.queensInBoard:
-#                 self.queensInBoard = []
-#         else:
-#             if not self.queensInBoard:
-#                 self.queensInBoard = [arg]
-#             else:
-#                 self.queensInBoard.append(arg)
-#
-#     def __str__(self):
-#         return repr(self) + self.queensInBoard
-
+class Casa():
+    def __init__(self, i, j):
+        self.queen = None
+        self.value = 0
+        self.i = i
+        self.j = j
 
 def abs_int(x):
     if x > 0:
         return x
     return -x
 
-
-def queens_rivals(queen01, queen02):
-    if isinstance(queen01, Queen) and isinstance(queen02, Queen):
-        if (queen01.y == queen02.y) or abs_int(queen02.x - queen01.x) == abs_int(queen02.y - queen01.y):
-            return True
+def rivals_casa(casa, queen):
+    if casa.j == queen.j or (abs_int(queen.i - casa.i) == abs_int(queen.j - casa.j)):
+        return True
     return False
 
+class Board(object):
+    def __init__(self, n):
+        self.board = []
+        self.queens = []
+        self.heuristic = 0
+        for j in range(n):
+            self.board.append([])
+            for i in range(n):
+                self.board[j].append(Casa(i, j))
 
-class QueensBoard(object):
+        for i in range(n):
+            self.queens.append(Queen(i, 0))
+            self.board[0][i].queen = self.queens[i]
+        self.casa_minimum = self.board[0][0]
 
-    board = []
-    heuristic = 0
-    @classmethod
-    def add_queen(cls, queen):
-        if isinstance(queen, Queen):
-            cls.board.append(queen)
+    def calculate_heuristics_values(self):
+        n = len(self.board)
+        i = 0
+        # j = 0
+        x_spot = 0
+        # y_spot = 0
+        self.casa_minimum = self.board[0][0]
+        # heuristic = 0
+        while x_spot < n:
+            y_spot = 0
+            while y_spot < n:
 
-    @classmethod
-    def calculate_heuristc(cls):
+                i = 0
+                heuristic = 0
+                while i < n:
+                    j = i+1
+                    while j < n:
+                        if i == j:
+                            j += 1
+                            continue
+                        if x_spot == i:
+                            if rivals_casa(self.board[y_spot][x_spot], self.queens[j]):
+                                heuristic += 1
+                        elif rivals_casa(self.queens[i], self.queens[j]):
+                            heuristic += 1
+                        j += 1
+                    i += 1
+                self.board[y_spot][x_spot].value = heuristic
+                if self.board[y_spot][x_spot].value < self.casa_minimum.value:
+                    self.casa_minimum = self.board[y_spot][x_spot]
+                y_spot += 1
+            x_spot += 1
+        self.heuristic = self.board[self.queens[0].j][self.queens[0].j].value
+
+    def change_queen(self):
+        i = self.casa_minimum.i
+        j = self.casa_minimum.j
+
+        queen_minimum = self.queens[i]
+        self.board[queen_minimum.j][queen_minimum.i] = None
+        queen_minimum.i = i
+        queen_minimum.j = j
+        self.board[j][i] = queen_minimum
+        self.calculate_heuristics_values()
+
+    def print_board(self):
         i = 0
         j = 0
-        n = len(cls.board)
-        found_rival = False
-        cls.heuristic = 0
-        board = cls.board
-        while i < n:
-            board[i].heuristic = 0
-            i += 1
+        n = len(self.board)
+        print("Heuristica: ", self.heuristic)
+        while j < n:
+            i = 0
+            while i < n:
+                if self.board[j][i].queen:
+                    print("Q", end=" ")
+                else:
+                    print(self.board[j][i].value, end=' ')
+                i += 1
 
-        i = 0
-        while i < n:
-            j = i + 1
-            while j < n and not found_rival:
-                if queens_rivals(board[i], board[j]):
-                    board[i].heuristic += 1
-                    board[j].heuristic += 1
-                    cls.heuristic += 1
-                j += 1
-
-            i += 1
-
-    @classmethod
-    def get_local_minimun(cls):
-        i = 0
-        j = 0
-        board = cls.board
-        n = len(board)
-
-        index_to_change = 0
-        heuristc_queen_beegin = 0
-        heuristic_queen_final = 0
-
-        while i < n:
+            print("")
+            j += 1
 
 
-class Queen(object):
-    def __init__(self, posX = 0, posY = 0):
-        self.x = posX
-        self.y = posY
-        self.heuristic
-        QueensBoard.add_queen(self)
-
-
-
+if __name__ == '__main__':
+    game = Board(4)
+    game.calculate_heuristics_values()
+    game.print_board()
