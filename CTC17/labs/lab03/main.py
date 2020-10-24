@@ -92,25 +92,30 @@ print(give_us_best_entropy_param(data_df, ['Countries', 'Local', 'Industry Secto
 
 
 class Connection_Sub_Tree(object):
-    def __init__(self, value, entropy, data_frame, params, result):
+    def __init__(self, value, entropy, data_frame, params, result, index = [0]):
         self.value = value
 
-        self.sub_tree = Tree(data_frame, params, result)
+        self.sub_tree = Tree(data_frame, params, result, index)
         self.entropy = entropy
         if not self.sub_tree.leaf:
             if self.entropy > self.sub_tree.entropy:
                 self.entropy = self.sub_tree.entropy
             else:
                 self.sub_tree.leaf = True
+                self.sub_tree.entropy = self.entropy
                 self.sub_tree.sub_trees.clear()
+        else:
+            self.sub_tree.entropy = self.entropy
 
 
 class Tree(object):
-    def __init__(self, data_frame, params, result):
+    def __init__(self, data_frame, params, result, index = [0]):
         if isinstance(data_frame, pd.DataFrame):
             self.data_frame = data_frame
             self.number_rows = self.data_frame[result].count()
             self.leaf = False
+            self.index = index[0]
+            index[0] += 1
             if isinstance(params, list) and (all(isinstance(n, str) for n in params)):
                 self.params = params
             else:
@@ -139,7 +144,8 @@ class Tree(object):
                                                 data_frame[self.param] == value
                                                 ],
                                             parameters_sub,
-                                            result
+                                            result,
+                                            index
                                             )
                     )
                 self.entropy = 0
@@ -156,12 +162,72 @@ class Tree(object):
 tree = Tree(data_df, ['Countries', 'Local', 'Industry Sector',
                'Potential Accident Level', 'Genre', 'Employee ou Terceiro', 'Risco Critico'], "Accident Level")
 
-print(tree.entropy)
-print(tree.sub_trees[0].sub_tree.leaf)
-print(tree.sub_trees[0].value)
+print("tree.entropy = ", tree.entropy)
+print("tree.expected_result = ", tree.expected_result)
+print("tree.sub_trees[0].sub_tree.leaf = ", tree.sub_trees[0].sub_tree.leaf)
+print("tree.sub_trees[0].value = ", tree.sub_trees[0].value)
 
 data_df = data_df[['Countries', 'Local', 'Industry Sector',
                'Potential Accident Level', 'Genre', 'Employee ou Terceiro', 'Risco Critico']]
+
+
+import pydot
+import os
+
+G = pydot.Dot(graph_type='digraph')
+
+
+def create_tree_graph(tree_graph, graph):
+    if isinstance(tree_graph, Tree):
+        if isinstance(graph, pydot.Dot):
+            # stack_tree = [tree]
+            # stack_graph = []
+
+            if tree_graph.index == 0:
+                node = pydot.Node("parameter:{}\nentropy:{}\nexpected_result:{}\n{^10}".format(
+                    tree_graph.param,
+                    tree_graph.entropy,
+                    tree_graph.expected_result,
+                    tree_graph.index
+                    ), style="filled", fillcolor="green")
+            else:
+                node = pydot.Node("parameter:{}\nentropy:{}\nexpected_result:{}\n{^10}".format(
+                    tree_graph.param,
+                    tree_graph.entropy,
+                    tree_graph.expected_result,
+                    tree_graph.index
+                ), style="filled", fillcolor="yellow")
+            graph.add_node(node)
+
+            for sub in tree_graph.sub_trees:
+                node = pydot.Node("parameter:{}\nentropy:{}\nexpected_result:{}\n{^10}".format(
+                    sub.sub_tree.param,
+                    sub.sub_tree.entropy,
+                    sub.sub_tree.expected_result,
+                    sub.sub_tree.index
+                ), style="filled", fillcolor="yellow")
+                graph.add_node(node)
+                edge = pydot.Edge("parameter:{}\nentropy:{}\nexpected_result:{}\n{^10}".format(
+                    tree_graph.param,
+                    tree_graph.entropy,
+                    tree_graph.expected_result,
+                    tree_graph.index
+                ),"parameter:{}\nentropy:{}\nexpected_result:{}\n{^10}".format(
+                    sub.sub_tree.param,
+                    sub.sub_tree.entropy,
+                    sub.sub_tree.expected_result,
+                    sub.sub_tree.index
+                ), label=sub.value)
+                graph.add_edge(edge)
+                create_tree_graph(sub.sub_tree, graph)
+
+            return graph
+        else:
+            raise TypeError("'graph has to be 'pydot.Dot' object")
+
+    else:
+        raise TypeError("'create_tree_graph has to receive 'Tree' object!")
+
 
 # def function02(data_df):
 #     return data_df[(data_df['Potential Accident Level'] == 'IV')]
