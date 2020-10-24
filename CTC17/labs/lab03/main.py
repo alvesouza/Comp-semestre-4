@@ -94,8 +94,7 @@ print(give_us_best_entropy_param(data_df, ['Countries', 'Local', 'Industry Secto
 class Connection_Sub_Tree(object):
     def __init__(self, value, entropy, data_frame, params, result):
         self.value = value
-        value_counts = data_frame[result].value_counts()
-        self.expected_result = value_counts.idxmax()
+
         self.sub_tree = Tree(data_frame, params, result)
         self.entropy = entropy
         if not self.sub_tree.leaf:
@@ -120,7 +119,8 @@ class Tree(object):
                 self.result = result
             else:
                 raise TypeError("Error, result has to be string")
-
+            value_counts = data_frame[result].value_counts()
+            self.expected_result = value_counts.idxmax()
             if len(self.params) > 0:
                 self.param, self.entropy = give_us_best_entropy_param(self.data_frame, self.params, self.result)
                 self.sub_trees = []
