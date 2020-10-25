@@ -1,9 +1,14 @@
 import pandas as pd
 import math
 import numpy as np
+import random
 import datetime
+import pydot
+import os
+# random.seed(25)
+# data_df = pd.read_csv("accident_data.csv")
 
-data_df = pd.read_csv("accident_data.csv")
+
 # print(data_df.axes)
 # print(data_df.columns)
 # print(data_df['Local'].unique())
@@ -63,7 +68,7 @@ def give_us_best_entropy_param(data_frame=pd.DataFrame(), params=[], result=""):
 
                 for index in value_counts:
                     # print("index = ", index)
-                    prob = index/count
+                    prob = index / count
                     # print("count = ", count, "count_rows = ",
                     #                                 count_rows, "prob = ", prob, end='\n\n')
                     if prob < 1 and prob > 0:
@@ -87,13 +92,13 @@ def give_us_best_entropy_param(data_frame=pd.DataFrame(), params=[], result=""):
 # ['Countries', 'Local', 'Industry Sector',
 #                                            'Potential Accident Level', 'Genre', 'Employee ou Terceiro',
 #                                            'Risco Critico']
-print(give_us_best_entropy_param(data_df, ['Countries', 'Local', 'Industry Sector',
-                                           'Potential Accident Level', 'Genre', 'Employee ou Terceiro',
-                                           'Risco Critico'], "Accident Level"))
+# print(give_us_best_entropy_param(data_df, ['Countries', 'Local', 'Industry Sector',
+#                                            'Potential Accident Level', 'Genre', 'Employee ou Terceiro',
+#                                            'Risco Critico'], "Accident Level"))
 
 
 class Connection_Sub_Tree(object):
-    def __init__(self, value, entropy, data_frame, params, result, index = [0]):
+    def __init__(self, value, entropy, data_frame, params, result, index=[0]):
         self.value = value
 
         self.sub_tree = Tree(data_frame, params, result, index)
@@ -102,6 +107,7 @@ class Connection_Sub_Tree(object):
             if self.entropy > self.sub_tree.entropy:
                 self.entropy = self.sub_tree.entropy
             else:
+                # print("id = {} podada".format(self.sub_tree.index))
                 self.sub_tree.leaf = True
                 self.sub_tree.entropy = self.entropy
                 self.sub_tree.sub_trees.clear()
@@ -110,7 +116,7 @@ class Connection_Sub_Tree(object):
 
 
 class Tree(object):
-    def __init__(self, data_frame, params, result, index = [0]):
+    def __init__(self, data_frame, params, result, index=[0]):
         if isinstance(data_frame, pd.DataFrame):
             self.data_frame = data_frame
             self.number_rows = self.data_frame[result].count()
@@ -126,7 +132,9 @@ class Tree(object):
             else:
                 raise TypeError("Error, result has to be string")
             value_counts = data_frame[result].value_counts()
+            # print("value_counts = ", value_counts)
             self.expected_result = value_counts.idxmax()
+            # print("self.expected_result = ", self.expected_result)
             if len(self.params) > 0:
                 self.param, self.entropy = give_us_best_entropy_param(self.data_frame, self.params, self.result)
                 self.sub_trees = []
@@ -153,30 +161,53 @@ class Tree(object):
                 # print("teste ///////////////////////////////")
                 for sub in self.sub_trees:
                     # print("sub.value = ", sub.value)
-                    self.entropy += sub.sub_tree.number_rows*sub.entropy/self.number_rows
+                    self.entropy += sub.sub_tree.number_rows * sub.entropy / self.number_rows
             else:
                 self.leaf = True
 
         else:
             raise TypeError("Error, error data_frame has to be a pandas' DataFrame")
 
-    def estimate_results(self, data):
+    def estimate_results(self, data, list_choices=['I', 'II', 'III', 'IV', 'V']):
         if isinstance(data, pd.DataFrame):
-            data["estimated_result"] = "0"
-            print(data)
-            n = data["estimated_result"].count()
+            estimated = "estimated_result"
+            data[estimated] = "0"
+            # print(data)
+            number_entries = data["estimated_result"].count()
             index_list = data.index
-            print("index_list = ", index_list)
+            # print("index_list = ", index_list)
             i = 0
-            while i < n:
-                #solve one
+            while i < number_entries:
+                # solve one
                 # print("index_list[i] = ", index_list[i])
                 # print("data.iloc[[i]] = ", data.iloc[[i]])
-                data.loc[index_list[i], "estimated_result"] = \
+                data.loc[index_list[i], estimated] = \
                     self.calculate_estimation(data.iloc[[i]], self)
                 # print("i = ", i, " estimated_result = ",  data["estimated_result"].values[i])
                 i += 1
-            return data
+
+            i = 0
+
+            n_list = len(list_choices)
+            matrix = []
+            precise_estimations = 0
+            while i < n_list:
+                j = 0
+                matrix.append([])
+                while j < n_list:
+                    # print(df_testing[(df_testing["estimated_result"] == list_accident[i])&
+                    #                             (df_testing["Accident Level"] == list_accident[j])]["Accident Level"].count())
+                    quant = data[(data[estimated] == list_choices[i]) &
+                                 (data[self.result] == list_choices[j])][
+                        self.result].count()
+                    if i == j:
+                        precise_estimations += quant
+                    matrix[i].append(quant)
+                    j += 1
+                i += 1
+
+            # print(pd.DataFrame(matrix, index=list_choices, columns=list_choices))
+            return pd.DataFrame(matrix, index=list_choices, columns=list_choices), precise_estimations, number_entries
         else:
             raise TypeError("Error, error data_frame has to be a pandas' DataFrame")
 
@@ -196,15 +227,16 @@ class Tree(object):
                 # print("resultado = ", resultado)
                 return resultado
 
-data_size = data_df["Accident Level"].count()
-# chosen_idx = np.random.choice(data_size, replace=False, size=int(round(data_size*0.8)))
-# print(data_df)
-# data_df
-# df_training = data_df.iloc[chosen_idx]
-# df_testing = data_df.drop(chosen_idx)
-df_training, df_testing = \
-                  np.split(data_df.sample(frac=1, random_state=42),
-                           [int(.8*len(data_df))])
+
+# data_size = data_df["Accident Level"].count()
+# # chosen_idx = np.random.choice(data_size, replace=False, size=int(round(data_size*0.8)))
+# # print(data_df)
+# # data_df
+# # df_training = data_df.iloc[chosen_idx]
+# # df_testing = data_df.drop(chosen_idx)
+# df_training, df_testing = \
+#     np.split(data_df.sample(frac=1, random_state=42),
+#              [int(.8 * len(data_df))])
 # print(df_testing)
 # print(df_training)
 # print (pd.merge(data_df, df_training, indicator=True, how='outer')
@@ -213,8 +245,8 @@ df_training, df_testing = \
 # print(data_df['Data'][0] == '2016-01-01 00:00:00')
 # print(data_df[data_df['Data'] == '2016-01-01 00:00:00'])
 
-parameters = ['Countries', 'Local', 'Industry Sector',
-               'Potential Accident Level', 'Genre', 'Employee ou Terceiro', 'Risco Critico']
+# parameters = ['Countries', 'Local', 'Industry Sector',
+#               'Potential Accident Level', 'Genre', 'Employee ou Terceiro', 'Risco Critico']
 
 # print(df_testing)
 # print(df_training)
@@ -222,8 +254,8 @@ parameters = ['Countries', 'Local', 'Industry Sector',
 # print(df_training['Potential Accident Level'][0])
 # print(list(df_testing.columns).pop())
 
-result = "Accident Level"
-tree = Tree(df_training, parameters , result)
+# result = "Accident Level"
+# tree = Tree(df_training, parameters , result)
 
 # print("tree.entropy = ", tree.entropy)
 # print("tree.expected_result = ", tree.expected_result)
@@ -234,14 +266,7 @@ tree = Tree(df_training, parameters , result)
 #                'Potential Accident Level', 'Genre', 'Employee ou Terceiro', 'Risco Critico']]
 
 
-import pydot
-import os
 
-G = pydot.Dot()
-G.set_node_defaults(
-    style='filled',
-    shape='box',
-    fontsize='10')
 
 
 def create_tree_graph(tree_graph, graph):
@@ -382,8 +407,8 @@ def create_tree_graph(tree_graph, graph):
 # print(df_testing)
 
 
-print(tree.estimate_results(df_testing))
-print(tree.estimate_results(df_training))
+# print(tree.estimate_results(df_testing))
+# print(tree.estimate_results(df_training))
 
 # df_training["estimated_result"] = 0
 # print(df_training)
@@ -438,3 +463,131 @@ print(tree.estimate_results(df_training))
 #     i += 1
 #
 # print(pd.DataFrame(matrix, index = list_accident, columns = list_accident))
+
+# print(data_df[(data_df["Accident Level"] == "VI")])
+# print(df_training.mode()['Accident Level'][0])
+
+
+def random_correct_guess(data, list_choices=['I', 'II', 'III', 'IV', 'V']):
+    if isinstance(data, pd.DataFrame):
+        number_entries = len(data)
+        number_possibilities = len(list_choices)
+        i = 0
+        precise_estimations = 0
+        index_data = data.index
+        # print(data["Accident Level"][index_data[0]])
+        while i < number_entries:
+            # print(random.randrange(0, number_possibilities))
+            rand = random.randrange(0, number_possibilities)
+            if data["Accident Level"][index_data[i]] == list_choices[rand]:
+                # print("data[\"Accident Level\"][index_data[i]] = ",
+                #       data["Accident Level"][index_data[i]], "list_choices[rand] = ", list_choices[rand])
+                precise_estimations += 1
+            i += 1
+
+        # print(pd.DataFrame(matrix, index=list_choices, columns=list_choices))
+        return precise_estimations, number_entries
+    else:
+        raise TypeError("Error, error data_frame has to be a pandas' DataFrame")
+
+
+# precise_estimations, number_entries = random_correct_guess(data=df_testing, list_choices=['I', 'II', 'III', 'IV', 'V'])
+#
+# print(precise_estimations / number_entries)
+
+
+class AprioriModel(object):
+    def __init__(self, training_model, result = "Accident Level"):
+        if isinstance(training_model, pd.DataFrame):
+            self.result = result
+            self.expected_result = training_model[self.result].value_counts().idxmax()
+            # print("expected_result = ", self.expected_result)
+
+    def estimate_results(self, data, list_choices=['I', 'II', 'III', 'IV', 'V']):
+        if isinstance(data, pd.DataFrame):
+            estimated = "estimated_result"
+            # data[estimated] = "0"
+            # print(data)
+            number_entries = len(data)
+            index_list = data.index
+
+            i = 0
+
+            n_list = len(list_choices)
+            matrix = []
+            precise_estimations = 0
+            while i < n_list:
+                j = 0
+                matrix.append([])
+                while j < n_list:
+                    # print(df_testing[(df_testing["estimated_result"] == list_accident[i])&
+                    #                             (df_testing["Accident Level"] == list_accident[j])]["Accident Level"].count())
+                    quant = data[(data[self.result] == list_choices[i]) &
+                                 (self.expected_result == list_choices[j])][
+                        self.result].count()
+                    if i == j:
+                        precise_estimations += quant
+                    matrix[i].append(quant)
+                    j += 1
+                i += 1
+
+            # print(pd.DataFrame(matrix, index=list_choices, columns=list_choices))
+            return pd.DataFrame(matrix, index=list_choices, columns=list_choices), precise_estimations, number_entries
+        else:
+            raise TypeError("Error, error data_frame has to be a pandas' DataFrame")
+
+# apriori = AprioriModel(df_training)
+#
+# print(apriori.estimate_results(df_testing))
+# seed = 3
+# seed = 63
+# seed = 76
+# seed = 83
+# seed = 86
+# seed = 95
+if __name__ == '__main__':
+    seed = 100
+    precise_estimations = 1
+    precise_estimations_apriori = 2
+    # while precise_estimations <= precise_estimations_apriori:
+    random.seed(seed)
+    data_df = pd.read_csv("accident_data.csv")
+    data_size = data_df["Accident Level"].count()
+    df_training, df_testing = \
+        np.split(data_df.sample(frac=1, random_state=seed),
+                 [int(.8 * len(data_df))])
+
+    parameters = ['Countries', 'Local', 'Industry Sector',
+                  'Potential Accident Level', 'Genre', 'Employee ou Terceiro', 'Risco Critico']
+
+    G = pydot.Dot()
+    G.set_node_defaults(
+        style='filled',
+        shape='box',
+        fontsize='10')
+
+    result = "Accident Level"
+    tree = Tree(df_training, parameters, result)
+    matrix, precise_estimations, number_entries = tree.estimate_results(df_testing)
+    print(precise_estimations / number_entries)
+    print("precise_estimations = ", precise_estimations)
+    print("matrix_training = \n", matrix)
+    matrix, precise_estimations, number_entries = tree.estimate_results(df_training)
+
+    print("precise_estimations = ", precise_estimations)
+    print("matrix = \n", matrix)
+    # print(tree.estimate_results(df_training))
+
+    # precise_estimations, number_entries = random_correct_guess(data=df_testing,
+    #                                                            list_choices=['I', 'II', 'III', 'IV', 'V'])
+
+
+
+    apriori = AprioriModel(df_training)
+    matrix_apriori, precise_estimations_apriori, number_entris_apriori = apriori.estimate_results(df_testing)
+    print(precise_estimations_apriori / number_entris_apriori)
+    print("precise_estimations_apriori = ", precise_estimations_apriori)
+    print("matrix_apriori = \n", matrix_apriori)
+
+        # seed += 1
+        # print("seed = ", seed)
