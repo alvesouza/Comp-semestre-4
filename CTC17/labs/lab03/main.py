@@ -193,12 +193,16 @@ class Tree(object):
                 return resultado
 
 data_size = data_df["Accident Level"].count()
-chosen_idx = np.random.choice(data_size, replace=False, size=int(round(data_size*0.8)))
+# chosen_idx = np.random.choice(data_size, replace=False, size=int(round(data_size*0.8)))
 # print(data_df)
 data_df
-df_training = data_df.iloc[chosen_idx]
-df_testing = data_df.drop(chosen_idx)
-
+# df_training = data_df.iloc[chosen_idx]
+# df_testing = data_df.drop(chosen_idx)
+df_training, df_testing = \
+                  np.split(data_df.sample(frac=1, random_state=42),
+                           [int(.8*len(data_df))])
+# print(df_testing)
+# print(df_training)
 # print (pd.merge(data_df, df_training, indicator=True, how='outer')
 #          .query('_merge=="left_only"')
 #          .drop('_merge', axis=1))
@@ -380,35 +384,35 @@ print(tree.estimate_results(df_testing))
 # print(df_testing)
 # print(df_testing.index)
 # df_testing["estimated_result"] = 'I'
-print(df_testing)
+# print(df_testing)
 
-i = 0
-list_accident = ['I', 'II', 'III', 'IV', 'V']
-n = len(list_accident)
-# while i < n:
-#     print("{:^4}".format(list_accident[i]))
-#     i += 1
-print(df_testing)
-print(df_testing[(df_testing["estimated_result"] == list_accident[0])&(df_testing["Accident Level"] == list_accident[1])])
-
+# i = 0
+# list_accident = ['I', 'II', 'III', 'IV', 'V']
+# n = len(list_accident)
+# # while i < n:
+# #     print("{:^4}".format(list_accident[i]))
+# #     i += 1
+# print(df_testing)
+# print(df_testing[(df_testing["estimated_result"] == list_accident[0])&(df_testing["Accident Level"] == list_accident[1])])
+#
+# # while i < n:
+# #     j = 0
+# #     while j < n:
+# #         print("{:^4}".format(list_accident[j]))
+# #         j += 1
+# #     i += 1
+#
+# matrix=[]
+#
 # while i < n:
 #     j = 0
+#     matrix.append([])
 #     while j < n:
-#         print("{:^4}".format(list_accident[j]))
+#         # print(df_testing[(df_testing["estimated_result"] == list_accident[i])&
+#         #                             (df_testing["Accident Level"] == list_accident[j])]["Accident Level"].count())
+#         matrix[i].append(df_testing[(df_testing["estimated_result"] == list_accident[i])&
+#                                     (df_testing["Accident Level"] == list_accident[j])]["Accident Level"].count())
 #         j += 1
 #     i += 1
-
-matrix=[]
-
-while i < n:
-    j = 0
-    matrix.append([])
-    while j < n:
-        # print(df_testing[(df_testing["estimated_result"] == list_accident[i])&
-        #                             (df_testing["Accident Level"] == list_accident[j])]["Accident Level"].count())
-        matrix[i].append(df_testing[(df_testing["estimated_result"] == list_accident[i])&
-                                    (df_testing["Accident Level"] == list_accident[j])]["Accident Level"].count())
-        j += 1
-    i += 1
-
-print(pd.DataFrame(matrix, index = list_accident, columns = list_accident))
+#
+# print(pd.DataFrame(matrix, index = list_accident, columns = list_accident))
