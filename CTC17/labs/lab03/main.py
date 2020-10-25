@@ -166,36 +166,40 @@ class Tree(object):
             print(data)
             n = data["estimated_result"].count()
             index_list = data.index
+            print("index_list = ", index_list)
             i = 0
             while i < n:
                 #solve one
-                data.loc[index_list[i], "estimated_result"] = self.calculate_estimation(df_testing.iloc[[i], :], self)
+                # print("index_list[i] = ", index_list[i])
+                # print("data.iloc[[i]] = ", data.iloc[[i]])
+                data.loc[index_list[i], "estimated_result"] = \
+                    self.calculate_estimation(data.iloc[[i]], self)
                 # print("i = ", i, " estimated_result = ",  data["estimated_result"].values[i])
                 i += 1
             return data
         else:
             raise TypeError("Error, error data_frame has to be a pandas' DataFrame")
 
-    def calculate_estimation(self, data, tree):
+    def calculate_estimation(self, data, tree_go):
         # found = False
         # print("data = \n", data)
         # print("data[0] = \n",data[tree.param].values[0])
         if isinstance(data, pd.DataFrame):
-            if isinstance(tree, Tree):
-                for sub in tree.sub_trees:
-                    if data[tree.param].values[0] == sub.value:
+            if isinstance(tree_go, Tree):
+                for sub in tree_go.sub_trees:
+                    if data[tree_go.param].values[0] == sub.value:
                         # found = True
                         resultado = self.calculate_estimation(data, sub.sub_tree)
                         # print("resultado = ", resultado)
                         return resultado
-                resultado = tree.expected_result
+                resultado = tree_go.expected_result
                 # print("resultado = ", resultado)
                 return resultado
 
 data_size = data_df["Accident Level"].count()
 # chosen_idx = np.random.choice(data_size, replace=False, size=int(round(data_size*0.8)))
 # print(data_df)
-data_df
+# data_df
 # df_training = data_df.iloc[chosen_idx]
 # df_testing = data_df.drop(chosen_idx)
 df_training, df_testing = \
@@ -376,8 +380,26 @@ def create_tree_graph(tree_graph, graph):
 
 # print(df_testing.iloc[[1], :])
 # print(df_testing)
+
+
 print(tree.estimate_results(df_testing))
-# print(tree.estimate_results(df_training))
+print(tree.estimate_results(df_training))
+
+# df_training["estimated_result"] = 0
+# print(df_training)
+# index_list = df_training.index
+# df_training.loc[index_list[3], "estimated_result"] = 2
+# print(df_training)
+#
+# index_list = df_testing.index
+# df_testing["estimated_result"] = 0
+# df_testing.loc[index_list[3], "estimated_result"] = 2846
+# print(type(df_testing))
+# print(type(df_testing.iloc[[3]]))
+# df = df_testing.iloc[[3]]
+# print(df)
+# print(df["estimated_result"].values[0])
+
 # df_testing["teste"] = 0
 # df_testing.loc[3, "teste"] = 100
 #
