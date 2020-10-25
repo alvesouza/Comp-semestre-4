@@ -373,6 +373,7 @@ def create_tree_graph(tree_graph, graph):
 # print(df_testing.iloc[[1], :])
 # print(df_testing)
 print(tree.estimate_results(df_testing))
+# print(tree.estimate_results(df_training))
 # df_testing["teste"] = 0
 # df_testing.loc[3, "teste"] = 100
 #
