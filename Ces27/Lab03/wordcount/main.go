@@ -25,6 +25,9 @@ var (
 
 	// Induced failure on Worker
 	nOps = flag.Int("fail", 0, "Number of operations to run before failure")
+
+	//teste
+	teste = flag.String("teste", "teste01", "teste carai")
 )
 
 // Code Entry Point
@@ -37,7 +40,10 @@ func main() {
 	)
 
 	flag.Parse()
-
+	//fmt.Println("teste = ",*teste)
+	//fmt.Println("distributed = ",*mode)
+	//fmt.Println("port = ",*port)
+	//fmt.Println("file = ",*file)
 	_ = os.Mkdir(MAP_PATH, os.ModePerm)
 	_ = os.Mkdir(RESULT_PATH, os.ModePerm)
 

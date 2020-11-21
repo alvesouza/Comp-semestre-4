@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	//"fmt"
 	"hash/fnv"
 	"labMapReduce/mapreduce"
@@ -34,10 +35,10 @@ func mapFunc(input []byte) (result []mapreduce.KeyValue) {
 	result = make([]mapreduce.KeyValue, 0)
 
 	for _, word := range words {
-		//COMPLETAR ESSE CÓDIGO
+		//Usa o ToLower para tornar em minusculo
 		//Basta colocar em result os itens <word,"1">
 		//Lembrando: word em minúsculo!
-		result = append(result, mapreduce.KeyValue{Key: word, Value: "1"})
+		result = append(result, mapreduce.KeyValue{Key: strings.ToLower(word), Value: "1"})
 	}
 
 	//fmt.Printf("%v\n", result) //Para ajudar nos testes. Precisa da biblioteca fmt (acima comentada)
@@ -103,5 +104,7 @@ func reduceFunc(input []mapreduce.KeyValue) (result []mapreduce.KeyValue) {
 func shuffleFunc(task *mapreduce.Task, key string) (reduceJob int) {
 	h := fnv.New32a()
 	h.Write([]byte(key))
+
+	fmt.Println()
 	return int(h.Sum32() % uint32(task.NumReduceJobs))
 }
