@@ -7,21 +7,36 @@ class Customers extends Component {
     this.state = {
       customers: []
     };
+    this.mount = this.mount.bind(this)
   }
 
-  componentDidMount() {
+  mount() {
+    console.log('React teste');
+    fetch('/api/pessoas')
+        .then(res => res.json())
+        .then(customers => this.setState({customers}, () => console.log('Customers fetched...', customers)));
+  }
+
+  mount1() {
     fetch('/api/customers')
-      .then(res => res.json())
-      .then(customers => this.setState({customers}, () => console.log('Customers fetched...', customers)));
+        .then(res => res.json())
+        .then(customers => this.setState({customers}, () => console.log('Customers fetched...', customers)));
   }
 
   render() {
     return (
+        // <Button
+        //     variant="primary"
+        //     disabled={isLoading}
+        //     onClick={!isLoading ? handleClick : null}
+        // >
+        //   {isLoading ? 'Loading…' : 'Click to load'}
+        // </Button>
       <div>
-        <h2>Customers</h2>
+        <button onClick={this.mount}>oi</button>
         <ul>
-        {this.state.customers.map(customer => 
-          <li key={customer.id}>{customer.firstName} {customer.lastName}</li>
+        {this.state.customers.map(customer =>
+          <li key={customer.id}>{customer.value} {customer.idade}</li>
         )}
         </ul>
       </div>

@@ -38,10 +38,12 @@ class MyForm extends React.Component {
                     Nome:
                     <input type="text" name='value' onChange={this.myChangeHandler} />
                 </label>
+                <br/>
                 <label>
                     Idade:
                     <input type="number" name='idade' onChange={this.myChangeHandler} />
                 </label>
+                <br/>
                 <input type="submit" value="Enviar" />
             </form>
         );

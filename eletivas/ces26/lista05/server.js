@@ -18,6 +18,14 @@ app.get('/api/customers', cors(), (req, res) => {
 });
 const util = require('util')
 
+app.get('/api/pessoas', cors(), (req, res) => {
+  fs.readFile('pessoas.json', 'utf8', function readFileCallback(err, data){
+    if (err){
+      console.log('error:\n',err);
+    } else {
+      res.json(JSON.parse(data).table);
+    }});
+})
 
 
 app.post('/api/pessoas', cors(), (req, res) => {
